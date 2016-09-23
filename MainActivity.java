@@ -3,16 +3,16 @@ package self.harmony.bashrandomh;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.TextView;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import android.widget.ListView;
 
-import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
     public static final String HTTP_BASH_IM = "http://bash.im/random/";
-
+    ListView listView;
+    QuoteAdapter quoteAdapter;
+    ArrayList<Quote> quotesList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +21,11 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        listView = (ListView) findViewById(R.id.list);
+
+
+
+
         new BackgroundJsoup().execute(HTTP_BASH_IM);
 
 
@@ -28,32 +33,30 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void updateUI(Document document) {
+    private void updateUI(ArrayList<Quote> quotes) {
 
-        TextView parsedHTML = (TextView) findViewById(R.id.sampleText);
-        parsedHTML.setText(document.text());
+        quoteAdapter = new QuoteAdapter(this, quotes);
+        listView.setAdapter(quoteAdapter);
+
     }
 
-    private class BackgroundJsoup extends AsyncTask <String, Void, Document> {
+    private class BackgroundJsoup extends AsyncTask <String, Void, ArrayList<Quote>> {
 
         @Override
-        protected Document doInBackground(String... params) {
+        protected ArrayList<Quote> doInBackground(String... params) {
 
             if (params.length < 1 || params[0] == null) {
                 return null;
             }
-            Document document = null;
-            try {
-                document = Jsoup.connect(params[0]).get();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return document;
+
+
+            ArrayList<Quote> quotes = TextParser.fetchQuotesList(params[0]);
+            return quotes;
         }
 
         @Override
-        protected void onPostExecute(Document document) {
-            updateUI(document);
+        protected void onPostExecute(ArrayList<Quote> quotes) {
+            updateUI(quotes);
         }
     }
 }
