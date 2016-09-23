@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class TextParser {
 
     public static final int MAX_QUOTES = 50;
-    public static final int MIN_RATING = 8000;
+    public static final int MIN_RATING = 12000;
 
     private TextParser() {}
 
@@ -38,8 +38,11 @@ public class TextParser {
                 } catch (NumberFormatException e) {
                     rating = 1;
                 } finally {
-                    if (rating >= MIN_RATING ) {
-                    quotesList.add(new Quote(rating, text));
+                    if (rating >= MIN_RATING) {
+                        Quote quote = new Quote(rating, text);
+                        if (!isDuplicate(quote, quotesList)) {
+                            quotesList.add(quote);
+                        }
                     }
                     if (quotesList.size() >= MAX_QUOTES) {
                         break;
@@ -49,6 +52,18 @@ public class TextParser {
         }
 
         return quotesList;
+    }
+
+    private static boolean isDuplicate(Quote quote, ArrayList<Quote> quotesList) {
+        boolean toReturn = false;
+
+        for (Quote compar : quotesList) {
+            if (compar.theSameAs(quote)) {
+                toReturn = true;
+            }
+        }
+        
+        return toReturn;
     }
 
     public static String cleanPreserveLineBreaks(String bodyHtml) {

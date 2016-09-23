@@ -24,4 +24,11 @@ public class Quote {
     public void setText(String text) {
         this.text = text;
     }
+
+    public boolean theSameAs(Quote input) {
+        if (input.getText().equals(text) && input.getRating() == rating){
+            return true;
+        }
+        return false;
+    }
 }
