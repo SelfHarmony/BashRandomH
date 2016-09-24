@@ -1,13 +1,12 @@
 package self.harmony.bashrandomh;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.widget.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.safety.Whitelist;
@@ -28,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     TextView progressBarTextView;
     ProgressBar progressBar;
     ImageView bashImage;
+    BackgroundJsoup parser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,12 +43,21 @@ public class MainActivity extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.list);
 
+        //выделяем отдельный объект, чтобы потом при обновлении просто запускать задачу снова -> parser.execute(HTTP_BASH_IM);
+        parser = new BackgroundJsoup();
+        parser.execute(HTTP_BASH_IM);
 
-
-
-        new BackgroundJsoup().execute(HTTP_BASH_IM);
-
-
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View itemClicked, int position, long id) {
+                Quote quote = (Quote) quoteAdapter.getItem(position);
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText(String.valueOf(quote.getRating()), quote.getText());
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(getApplicationContext(), "Скопировано в буфер обмена",    //((TextView) itemClicked).getText()
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
 
 
     }
