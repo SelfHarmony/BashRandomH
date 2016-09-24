@@ -24,7 +24,9 @@ public class QuoteAdapter extends ArrayAdapter {
 
         Quote singleQuote = (Quote) getItem(position);
         TextView quoteTextView = (TextView) listItemView.findViewById(R.id.quote);
+        TextView ratingTextView = (TextView) listItemView.findViewById(R.id.rating);
         quoteTextView.setText(singleQuote.getText());
+        ratingTextView.setText(String.valueOf(singleQuote.getRating()));
 
 
         return listItemView;

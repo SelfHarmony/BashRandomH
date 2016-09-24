@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class TextParser {
-
+    static int progress;
     public static final int MAX_QUOTES = 50;
     public static final int MIN_RATING = 12000;
 
@@ -42,6 +42,8 @@ public class TextParser {
                         Quote quote = new Quote(rating, text);
                         if (!isDuplicate(quote, quotesList)) {
                             quotesList.add(quote);
+                            progress = quotesList.size();
+
                         }
                     }
                     if (quotesList.size() >= MAX_QUOTES) {
