@@ -1,10 +1,10 @@
 package self.harmony.bashrandomh;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.*;
 import org.jsoup.Jsoup;
@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     public static final int MAX_QUOTES = 95;
     public static final int MIN_RATING = 9000;
@@ -32,9 +32,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.activity_main);
+
+
 
         progressBarTextView = (TextView) findViewById(R.id.textViewProgressBar);
 //        progressBarTextView.setText("Отбираем цитаты с рейтингом выше " + MIN_RATING + "...");
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
         quoteAdapter = new QuoteAdapter(this, quotes);
         listView.setAdapter(quoteAdapter);
+
 
     }
 
