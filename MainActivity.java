@@ -14,11 +14,12 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class MainActivity extends Activity {
 
-    public static final int MAX_QUOTES = 95;
+    public static final int MAX_QUOTES = 30;
     public static final int MIN_RATING = 9000;
 
     public static final String HTTP_BASH_IM = "http://bash.im/random/";
@@ -80,46 +81,67 @@ public class MainActivity extends Activity {
                 return null;
             }
 
-            ArrayList<Quote> quotesList = new ArrayList<>();
-            Document doc = null;
 
-            while (quotesList.size() <= MAX_QUOTES) {
+            HashMap<String, Quote> quoteMap = new HashMap<>(); // для отсеивания дубликатов
+
+            ArrayList<Quote> quotesList = new ArrayList<>(); // массив для наших объектов Quote
+            Document doc;
+
+            while (quoteMap.size() <= MAX_QUOTES) {
+
                 int progress;
-                try {
-                    doc = Jsoup.connect(HTTP_BASH_IM).get();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
 
+                doc = getJsoupData(HTTP_BASH_IM); // коннектимся к башу и получаем HTTP
+
+                //Получаем все элементы со страницы, из которых будем лепить объекты quote
                 Elements quoteTexts = doc.select("div[class=\"text\"]"); //текст
                 Elements ratings = doc.select("span[class=\"rating\"]"); //рейтинг
+                Elements date = doc.select("span[class=\"date\"]"); //дата
+                Elements id = doc.select("[class=\"id\"]"); //id   <span id="v410856" class="rating">13426</span>
 
-                for (int i = 0; i < quoteTexts.size(); i++) {
-                    int rating = 1;
-                    String text = cleanPreserveLineBreaks(quoteTexts.get(i).html());
-                    try {
-                        rating = Integer.parseInt(ratings.get(i).text());
-                    } catch (NumberFormatException e) {
-                        rating = 1;
-                    } finally {
+                int rating; //инициализируем переменную для сравнения рейтинга
+                for (int i = 0; i < quoteTexts.size(); i++) { //создаем наши Quote объекты
+                    String quoteText = cleanPreserveLineBreaks(quoteTexts.get(i).html()); //хитрый способ сохранить переводы строк
+                    rating = getValidRating(ratings, i); //преобразовываем в integer и ловим NumberFormatException
+                    String quoteID = id.get(i).text();
+                    String quoteDate = id.get(i).text();
                         if (rating >= MIN_RATING) {
-                            Quote quote = new Quote(rating, text);
-                            if (!isDuplicate(quote, quotesList)) {
-                                quotesList.add(quote);
-                                progress = quotesList.size();
-                                publishProgress(progress);
-                            }
+                            Quote quote = new Quote(rating, quoteText, quoteID, quoteDate);
+                            quoteMap.put(quoteID, quote);
+                            progress = quoteMap.size()*100/MAX_QUOTES;
+                            publishProgress(progress);
                         }
-                        if (quotesList.size() >= MAX_QUOTES) {
-
-                            break;
-                        }
-                    }
                 }
 
             }
-
+            //запихиваем все то добро в конечный массив
+            for (Quote quote : quoteMap.values()) {
+                if (quotesList.size() > MAX_QUOTES) {
+                    break;
+                }
+                quotesList.add(quote);
+            }
             return quotesList;
+        }
+
+        private Document getJsoupData(String http) {
+            Document doc = null;
+            try {
+                doc = Jsoup.connect(http).get();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return doc;
+        }
+
+        private int getValidRating(Elements ratings, int i) {
+            int rating;
+            try {
+                rating = Integer.parseInt(ratings.get(i).text());
+            } catch (NumberFormatException e) {
+                rating = 1;
+            }
+            return rating;
         }
 
         @Override
