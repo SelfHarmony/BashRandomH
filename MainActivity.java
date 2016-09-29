@@ -1,10 +1,14 @@
 package self.harmony.bashrandomh;
 
-import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
+import android.content.*;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.*;
 import org.jsoup.Jsoup;
@@ -17,37 +21,52 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
-    public static final int MAX_QUOTES = 30;
-    public static final int MIN_RATING = 9000;
+    private Context context = this;
+    private static final int MAX_QUOTES = 30;
+    //private static final int MIN_RATING = 8000;
 
-    public static final String HTTP_BASH_IM = "http://bash.im/random/";
-    ListView listView;
-    QuoteAdapter quoteAdapter;
-    TextView progressBarTextView;
-    ProgressBar progressBar;
-    ImageView bashImage;
-    BackgroundJsoup parser;
+    private static final String HTTP_BASH_IM = "http://bash.im/random/";
+    private OverscrollListView listView;
+    private QuoteAdapter quoteAdapter;
+    private TextView progressBarTextView;
+    private ProgressBar progressBar;
+    private ImageView bashImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
 
+        TextView mEmptyStateTextView = (TextView) findViewById(R.id.emptyView);
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
 
         progressBarTextView = (TextView) findViewById(R.id.textViewProgressBar);
-//        progressBarTextView.setText("Отбираем цитаты с рейтингом выше " + MIN_RATING + "...");
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         bashImage = (ImageView) findViewById(R.id.bashImageView);
+        listView = (OverscrollListView) findViewById(R.id.list);
 
-        listView = (ListView) findViewById(R.id.list);
+        if (networkInfo != null && networkInfo.isConnected()) {
+            mEmptyStateTextView.setVisibility(View.GONE);
+            BackgroundJsoup parser = new BackgroundJsoup();
+            //выделяем отдельный объект, чтобы потом при обновлении просто запускать задачу снова -> parser.execute(HTTP_BASH_IM);
+            parser.execute(HTTP_BASH_IM);
+        } else {
+            progressBar.setVisibility(View.GONE);
+            progressBarTextView.setVisibility(View.GONE);
+            bashImage.setVisibility(View.GONE);
+            mEmptyStateTextView.setText(R.string.noInternet);
+        }
 
-        //выделяем отдельный объект, чтобы потом при обновлении просто запускать задачу снова -> parser.execute(HTTP_BASH_IM);
-        parser = new BackgroundJsoup();
-        parser.execute(HTTP_BASH_IM);
+
+
+
+
+
+
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -62,6 +81,26 @@ public class MainActivity extends Activity {
         });
 
 
+
+
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menu_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void updateUI(ArrayList<Quote> quotes) {
@@ -76,6 +115,14 @@ public class MainActivity extends Activity {
 
         @Override
         protected ArrayList<Quote> doInBackground(String... params) {
+
+
+            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+            String stringRating = sharedPrefs.getString(
+                    getString(R.string.settings_minRating_key),
+                    getString(R.string.settings_minRating_default));
+            int min_rating = getValidRating(stringRating);
+
 
             if (params.length < 1 || params[0] == null) {
                 return null;
@@ -104,8 +151,8 @@ public class MainActivity extends Activity {
                     String quoteText = cleanPreserveLineBreaks(quoteTexts.get(i).html()); //хитрый способ сохранить переводы строк
                     rating = getValidRating(ratings, i); //преобразовываем в integer и ловим NumberFormatException
                     String quoteID = id.get(i).text();
-                    String quoteDate = id.get(i).text();
-                        if (rating >= MIN_RATING) {
+                    String quoteDate = date.get(i).text();
+                        if (rating >= min_rating) {
                             Quote quote = new Quote(rating, quoteText, quoteID, quoteDate);
                             quoteMap.put(quoteID, quote);
                             progress = quoteMap.size()*100/MAX_QUOTES;
@@ -122,6 +169,25 @@ public class MainActivity extends Activity {
                 quotesList.add(quote);
             }
             return quotesList;
+        }
+
+
+
+
+        @Override
+        protected void onProgressUpdate(Integer... progresses) {
+            super.onProgressUpdate(progresses);
+            progressBar.setProgress(progresses[0]);
+
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Quote> quotes) {
+            progressBar.setVisibility(View.GONE);
+            progressBarTextView.setVisibility(View.GONE);
+            bashImage.setVisibility(View.GONE);
+            progressBar.setProgress(0);
+            updateUI(quotes);
         }
 
         private Document getJsoupData(String http) {
@@ -144,39 +210,20 @@ public class MainActivity extends Activity {
             return rating;
         }
 
-        @Override
-        protected void onProgressUpdate(Integer... progresses) {
-            super.onProgressUpdate(progresses);
-            progressBar.setProgress(progresses[0]);
-
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Quote> quotes) {
-            progressBar.setVisibility(View.GONE);
-            progressBarTextView.setVisibility(View.GONE);
-            bashImage.setVisibility(View.GONE);
-            progressBar.setProgress(0);
-            updateUI(quotes);
-        }
-    }
-
-
-
-
-    private static boolean isDuplicate(Quote quote, ArrayList<Quote> quotesList) {
-        boolean toReturn = false;
-
-        for (Quote compar : quotesList) {
-            if (compar.theSameAs(quote)) {
-                toReturn = true;
+        private int getValidRating(String ratingS) {
+            int rating;
+            try {
+                rating = Integer.parseInt(ratingS);
+            } catch (Exception e) {
+                rating = Integer.parseInt(String.valueOf(R.string.settings_minRating_default));
             }
+            return rating;
         }
-
-        return toReturn;
     }
 
-    public static String cleanPreserveLineBreaks(String bodyHtml) {
+
+
+    private static String cleanPreserveLineBreaks(String bodyHtml) {
 
         // get pretty printed html with preserved br and p tags
         String prettyPrintedBodyFragment = Jsoup.clean(bodyHtml, "", Whitelist.none().addTags("br", "p"), new Document.OutputSettings().prettyPrint(true));

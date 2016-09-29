@@ -32,14 +32,22 @@ public class QuoteAdapter extends ArrayAdapter {
         Quote singleQuote = (Quote) getItem(position);
         TextView quoteTextView = (TextView) listItemView.findViewById(R.id.quote);
         TextView ratingTextView = (TextView) listItemView.findViewById(R.id.rating);
+        TextView dateTextView = (TextView) listItemView.findViewById(R.id.date);
+        TextView idTextView = (TextView) listItemView.findViewById(R.id.id);
         // Задаем шрифт courier new
         quoteTextView.setTypeface(tf);
         ratingTextView.setTypeface(tf);
+        dateTextView.setTypeface(tf);
+        idTextView.setTypeface(tf);
 
         quoteTextView.setText(singleQuote.getText());
         ratingTextView.setText(String.valueOf(singleQuote.getRating()));
+        dateTextView.setText(singleQuote.getDate());
+        idTextView.setText(singleQuote.getId());
 
 
         return listItemView;
     }
+
+
 }

@@ -45,10 +45,4 @@ public class Quote {
         this.date = date;
     }
 
-    public boolean theSameAs(Quote input) {
-        if (input.getText().equals(text) && input.getRating() == rating){
-            return true;
-        }
-        return false;
-    }
 }
