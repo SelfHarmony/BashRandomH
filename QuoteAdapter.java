@@ -49,5 +49,7 @@ public class QuoteAdapter extends ArrayAdapter {
         return listItemView;
     }
 
+    public void addNewDataToAdapter(ArrayList<Quote> list) {
 
+    }
 }

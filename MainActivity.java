@@ -28,11 +28,13 @@ public class MainActivity extends AppCompatActivity {
     //private static final int MIN_RATING = 8000;
 
     private static final String HTTP_BASH_IM = "http://bash.im/random/";
-    private OverscrollListView listView;
+    private BashListView listView;
     private QuoteAdapter quoteAdapter;
     private TextView progressBarTextView;
     private ProgressBar progressBar;
     private ImageView bashImage;
+    private boolean flag_loading;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,19 +43,21 @@ public class MainActivity extends AppCompatActivity {
 
 
         TextView mEmptyStateTextView = (TextView) findViewById(R.id.emptyView);
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        final ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
 
         progressBarTextView = (TextView) findViewById(R.id.textViewProgressBar);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         bashImage = (ImageView) findViewById(R.id.bashImageView);
-        listView = (OverscrollListView) findViewById(R.id.list);
+        listView = (BashListView) findViewById(R.id.list);
 
         if (networkInfo != null && networkInfo.isConnected()) {
             mEmptyStateTextView.setVisibility(View.GONE);
-            BackgroundJsoup parser = new BackgroundJsoup();
             //выделяем отдельный объект, чтобы потом при обновлении просто запускать задачу снова -> parser.execute(HTTP_BASH_IM);
+            BackgroundJsoup parser = new BackgroundJsoup();
             parser.execute(HTTP_BASH_IM);
+            quoteAdapter = new QuoteAdapter(this, new ArrayList<Quote>());
+            listView.setAdapter(quoteAdapter);
         } else {
             progressBar.setVisibility(View.GONE);
             progressBarTextView.setVisibility(View.GONE);
@@ -80,6 +84,40 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem,
+                                 int visibleItemCount, int totalItemCount) {
+
+                if(firstVisibleItem+visibleItemCount == totalItemCount && totalItemCount!=0)
+                {
+                    if(flag_loading == false)
+                    {
+                        flag_loading = true;
+                        additems();
+
+                    }
+                }
+
+            }
+        });
+
+/*        //что будет показываться когда мы оверскроллим
+        listView.setOverscrollFooter(overscrollFooter);          */
+
+
+    }
+
+    private void additems() {
+        Toast.makeText(getApplicationContext(), "Подгружаем",    //((TextView) itemClicked).getText()
+                Toast.LENGTH_SHORT).show();
+        BackgroundJsoup parser = new BackgroundJsoup();
+        parser.execute(HTTP_BASH_IM);
 
 
 
@@ -105,10 +143,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateUI(ArrayList<Quote> quotes) {
 
+
+
         quoteAdapter = new QuoteAdapter(this, quotes);
         listView.setAdapter(quoteAdapter);
-
-
     }
 
     private class BackgroundJsoup extends AsyncTask <String, Integer, ArrayList<Quote>> {
@@ -148,7 +186,9 @@ public class MainActivity extends AppCompatActivity {
 
                 int rating; //инициализируем переменную для сравнения рейтинга
                 for (int i = 0; i < quoteTexts.size(); i++) { //создаем наши Quote объекты
-                    String quoteText = cleanPreserveLineBreaks(quoteTexts.get(i).html()); //хитрый способ сохранить переводы строк
+                    String quoteText = cleanPreserveLineBreaks(quoteTexts.get(i).html());//хитрый способ сохранить переводы строк
+                    quoteText = removeNonParseable(quoteText);//избавляемся от недопарсенных символов
+
                     rating = getValidRating(ratings, i); //преобразовываем в integer и ловим NumberFormatException
                     String quoteID = id.get(i).text();
                     String quoteDate = date.get(i).text();
@@ -171,7 +211,13 @@ public class MainActivity extends AppCompatActivity {
             return quotesList;
         }
 
-
+        private String removeNonParseable(String quoteText) {
+            quoteText = quoteText.replaceAll("&lt;", "<");
+            quoteText = quoteText.replaceAll("&gt;", ">");
+            quoteText = quoteText.replaceAll("&amp;", "&");
+            quoteText = quoteText.replaceAll("—", "-");
+            return quoteText;
+        }
 
 
         @Override
@@ -187,7 +233,9 @@ public class MainActivity extends AppCompatActivity {
             progressBarTextView.setVisibility(View.GONE);
             bashImage.setVisibility(View.GONE);
             progressBar.setProgress(0);
-            updateUI(quotes);
+            quoteAdapter.addAll(quotes);
+            flag_loading = false;
+            //updateUI(quotes);
         }
 
         private Document getJsoupData(String http) {
@@ -226,7 +274,9 @@ public class MainActivity extends AppCompatActivity {
     private static String cleanPreserveLineBreaks(String bodyHtml) {
 
         // get pretty printed html with preserved br and p tags
-        String prettyPrintedBodyFragment = Jsoup.clean(bodyHtml, "", Whitelist.none().addTags("br", "p"), new Document.OutputSettings().prettyPrint(true));
+        String prettyPrintedBodyFragment = Jsoup.parse(bodyHtml).html();
+        prettyPrintedBodyFragment = Jsoup.clean(prettyPrintedBodyFragment, "", Whitelist.none().addTags("br", "p"), new Document.OutputSettings().prettyPrint(true));
+
         // get plain text with preserved line breaks by disabled prettyPrint
         return Jsoup.clean(prettyPrintedBodyFragment, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
     }
