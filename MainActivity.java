@@ -1,6 +1,7 @@
 package self.harmony.bashrandomh;
 
 import android.content.*;
+import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -36,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageView bashImage;
     private boolean flag_loading;
     private View footer;
+    private TextView footerTextView;
+    Typeface tf; //шрифт
 
 
     @Override
@@ -64,6 +67,9 @@ public class MainActivity extends AppCompatActivity {
             listView.setVisibility(View.GONE); //скрываем listView чтоб не показывать лишние элементы на стартово экране
             listView.addFooterView(footer); //впихиваем футер в наш listView
             footerProgressBar = (ProgressBar) findViewById(R.id.footerProgressBar);
+            footerTextView = (TextView) findViewById(R.id.footerTextView);
+            tf = Typeface.createFromAsset(context.getAssets(), "fonts/courier.ttf"); //задаем шрифт для футера
+            footerTextView.setTypeface(tf);
             listView.setAdapter(quoteAdapter); //задаем адаптер ПОСЛЕ установки футера
 
         } else {
@@ -105,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if(firstVisibleItem+visibleItemCount == totalItemCount && totalItemCount!=0)
                 {
-                    if(flag_loading == false)
+                    if(!flag_loading)
                     {
                         flag_loading = true;
                         additems();
@@ -189,14 +195,15 @@ public class MainActivity extends AppCompatActivity {
 
                 int rating; //инициализируем переменную для сравнения рейтинга
                 for (int i = 0; i < quoteTexts.size(); i++) { //создаем наши Quote объекты
-                    String quoteText = cleanPreserveLineBreaks(quoteTexts.get(i).html());//хитрый способ сохранить переводы строк
-                    quoteText = removeNonParseable(quoteText);//избавляемся от недопарсенных символов
+                    rating = getValidRating(ratings, i); //получаем рейтинг, преобразовываем в integer и ловим NumberFormatException
 
-                    rating = getValidRating(ratings, i); //преобразовываем в integer и ловим NumberFormatException
-                    String quoteID = id.get(i).text();
-                    String quoteDate = date.get(i).text();
                         if (rating >= min_rating) {
-                            Quote quote = new Quote(rating, quoteText, quoteID, quoteDate);
+                            String quoteText = cleanPreserveLineBreaks(quoteTexts.get(i).html());//хитрый способ сохранить переводы строк
+                            quoteText = removeNonParseable(quoteText);//избавляемся от недопарсенных символов
+                            String quoteID = id.get(i).text();
+                            String quoteDate = date.get(i).text();
+
+                            Quote quote = new Quote(rating, quoteText, quoteID, quoteDate); //создаем объект
                             quoteMap.put(quoteID, quote);
                             progress = quoteMap.size()*100/MAX_QUOTES;
                             publishProgress(progress);
