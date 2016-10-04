@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
         progressBarTextView = (TextView) findViewById(R.id.textViewProgressBar);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setMax(MAX_QUOTES); //задаем значение полного заполнения
 
         bashImage = (ImageView) findViewById(R.id.bashImageView);
         listView = (BashListView) findViewById(R.id.list);
@@ -64,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
             listView.setVisibility(View.GONE); //скрываем listView чтоб не показывать лишние элементы на стартово экране
             listView.addFooterView(footer); //впихиваем футер в наш listView
             footerProgressBar = (ProgressBar) findViewById(R.id.footerProgressBar);
+            footerProgressBar.setMax(MAX_QUOTES); //задаем значение полного заполнения
             TextView footerTextView = (TextView) findViewById(R.id.footerTextView);
             Typeface tf = Typeface.createFromAsset(context.getAssets(), "fonts/courier.ttf");
             footerTextView.setTypeface(tf);
@@ -202,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
 
                             Quote quote = new Quote(rating, quoteText, quoteID, quoteDate); //создаем объект
                             quoteMap.put(quoteID, quote);
-                            progress = quoteMap.size()*100/MAX_QUOTES;
+                            progress = quoteMap.size(); //*100/MAX_QUOTES; // а можно было проще ProgressBar.setMax(data);
                             publishProgress(progress);
                         }
                 }
