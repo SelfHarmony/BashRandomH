@@ -32,8 +32,10 @@ public class MainActivity extends AppCompatActivity {
     private QuoteAdapter quoteAdapter;
     private TextView progressBarTextView;
     private ProgressBar progressBar;
+    private ProgressBar footerProgressBar;
     private ImageView bashImage;
     private boolean flag_loading;
+    private View footer;
 
 
     @Override
@@ -48,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
         progressBarTextView = (TextView) findViewById(R.id.textViewProgressBar);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
+
         bashImage = (ImageView) findViewById(R.id.bashImageView);
         listView = (BashListView) findViewById(R.id.list);
 
@@ -57,8 +60,14 @@ public class MainActivity extends AppCompatActivity {
             BackgroundJsoup parser = new BackgroundJsoup();
             parser.execute(HTTP_BASH_IM);
             quoteAdapter = new QuoteAdapter(this, new ArrayList<Quote>());
-            listView.setAdapter(quoteAdapter);
+            footer = getLayoutInflater().inflate(R.layout.footer, null); //нахлодим наш футер
+            listView.setVisibility(View.GONE); //скрываем listView чтоб не показывать лишние элементы на стартово экране
+            listView.addFooterView(footer); //впихиваем футер в наш listView
+            footerProgressBar = (ProgressBar) findViewById(R.id.footerProgressBar);
+            listView.setAdapter(quoteAdapter); //задаем адаптер ПОСЛЕ установки футера
+
         } else {
+            listView.setVisibility(View.GONE);
             progressBar.setVisibility(View.GONE);
             progressBarTextView.setVisibility(View.GONE);
             bashImage.setVisibility(View.GONE);
@@ -114,8 +123,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void additems() {
-        Toast.makeText(getApplicationContext(), "Подгружаем",    //((TextView) itemClicked).getText()
-                Toast.LENGTH_SHORT).show();
+        /*Toast.makeText(getApplicationContext(), "Подгружаем",    //((TextView) itemClicked).getText()
+                Toast.LENGTH_SHORT).show();*/
         BackgroundJsoup parser = new BackgroundJsoup();
         parser.execute(HTTP_BASH_IM);
 
@@ -141,13 +150,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void updateUI(ArrayList<Quote> quotes) {
 
-
-
-        quoteAdapter = new QuoteAdapter(this, quotes);
-        listView.setAdapter(quoteAdapter);
-    }
 
     private class BackgroundJsoup extends AsyncTask <String, Integer, ArrayList<Quote>> {
 
@@ -224,6 +227,8 @@ public class MainActivity extends AppCompatActivity {
         protected void onProgressUpdate(Integer... progresses) {
             super.onProgressUpdate(progresses);
             progressBar.setProgress(progresses[0]);
+            footerProgressBar.setProgress(progresses[0]);
+
 
         }
 
@@ -234,8 +239,9 @@ public class MainActivity extends AppCompatActivity {
             bashImage.setVisibility(View.GONE);
             progressBar.setProgress(0);
             quoteAdapter.addAll(quotes);
+            footerProgressBar.setProgress(0);
             flag_loading = false;
-            //updateUI(quotes);
+            listView.setVisibility(View.VISIBLE); //снова показываем наш listView
         }
 
         private Document getJsoupData(String http) {
