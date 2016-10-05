@@ -43,12 +43,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        Typeface georgia = Typeface.createFromAsset(context.getAssets(), "fonts/georgia.ttf");
         TextView mEmptyStateTextView = (TextView) findViewById(R.id.emptyView);
         final ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
 
         progressBarTextView = (TextView) findViewById(R.id.textViewProgressBar);
+        progressBarTextView.setTypeface(georgia);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setMax(MAX_QUOTES); //задаем значение полного заполнения
 
@@ -67,8 +68,7 @@ public class MainActivity extends AppCompatActivity {
             footerProgressBar = (ProgressBar) findViewById(R.id.footerProgressBar);
             footerProgressBar.setMax(MAX_QUOTES); //задаем значение полного заполнения
             TextView footerTextView = (TextView) findViewById(R.id.footerTextView);
-            Typeface tf = Typeface.createFromAsset(context.getAssets(), "fonts/courier.ttf");
-            footerTextView.setTypeface(tf);
+            footerTextView.setTypeface(georgia);
             listView.setAdapter(quoteAdapter); //задаем адаптер ПОСЛЕ установки футера
 
         } else {
@@ -78,11 +78,6 @@ public class MainActivity extends AppCompatActivity {
             bashImage.setVisibility(View.GONE);
             mEmptyStateTextView.setText(R.string.noInternet);
         }
-
-
-
-
-
 
 
 
@@ -97,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
             }
         });
+
 
         listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -113,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                     if(!flag_loading)
                     {
                         flag_loading = true;
-                        additems();
+                        addItems();
 
                     }
                 }
@@ -121,13 +117,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-/*        //что будет показываться когда мы оверскроллим
-        listView.setOverscrollFooter(overscrollFooter);          */
-
-
     }
 
-    private void additems() {
+    private void addItems() {
         /*Toast.makeText(getApplicationContext(), "Подгружаем",    //((TextView) itemClicked).getText()
                 Toast.LENGTH_SHORT).show();*/
         BackgroundJsoup parser = new BackgroundJsoup();
@@ -224,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
             quoteText = quoteText.replaceAll("&lt;", "<");
             quoteText = quoteText.replaceAll("&gt;", ">");
             quoteText = quoteText.replaceAll("&amp;", "&");
-            quoteText = quoteText.replaceAll("—", "-");
+            //quoteText = quoteText.replaceAll("—", "-");
             return quoteText;
         }
 

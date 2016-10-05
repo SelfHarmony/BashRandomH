@@ -13,12 +13,14 @@ import java.util.ArrayList;
 
 public class QuoteAdapter extends ArrayAdapter {
     Context context;
-    Typeface tf;
+    Typeface ubuntu;
+    Typeface helvetica;
 
     public QuoteAdapter(Activity context, ArrayList<Quote> quotes){
         super(context, 0, quotes);
         this.context = context;
-        tf = Typeface.createFromAsset(context.getAssets(), "fonts/courier.ttf");
+        ubuntu = Typeface.createFromAsset(context.getAssets(), "fonts/ubuntu.ttf");
+        helvetica = Typeface.createFromAsset(context.getAssets(), "fonts/helvetica.ttf");
     }
 
     @Override
@@ -35,10 +37,10 @@ public class QuoteAdapter extends ArrayAdapter {
         TextView dateTextView = (TextView) listItemView.findViewById(R.id.date);
         TextView idTextView = (TextView) listItemView.findViewById(R.id.id);
         // Задаем шрифт courier new
-        quoteTextView.setTypeface(tf);
-        ratingTextView.setTypeface(tf);
-        dateTextView.setTypeface(tf);
-        idTextView.setTypeface(tf);
+        quoteTextView.setTypeface(ubuntu);
+        ratingTextView.setTypeface(helvetica);
+        dateTextView.setTypeface(helvetica);
+        idTextView.setTypeface(helvetica);
 
         quoteTextView.setText(singleQuote.getText());
         ratingTextView.setText(String.valueOf(singleQuote.getRating()));
