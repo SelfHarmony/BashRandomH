@@ -60,22 +60,32 @@ public class MainActivity extends AppCompatActivity {
             mEmptyStateTextView.setVisibility(View.GONE);
             //выделяем отдельный объект, чтобы потом при обновлении просто запускать задачу снова -> parser.execute(HTTP_BASH_IM);
             BackgroundJsoup parser = new BackgroundJsoup();
-            parser.execute(HTTP_BASH_IM);
             quoteAdapter = new QuoteAdapter(this, new ArrayList<Quote>());
-            View footer = getLayoutInflater().inflate(R.layout.footer, null);
-            listView.setVisibility(View.GONE); //скрываем listView чтоб не показывать лишние элементы на стартово экране
-            listView.addFooterView(footer); //впихиваем футер в наш listView
-            footerProgressBar = (ProgressBar) findViewById(R.id.footerProgressBar);
-            footerProgressBar.setMax(MAX_QUOTES); //задаем значение полного заполнения
-            TextView footerTextView = (TextView) findViewById(R.id.footerTextView);
-            footerTextView.setTypeface(georgia);
-            listView.setAdapter(quoteAdapter); //задаем адаптер ПОСЛЕ установки футера
+            parser.execute(HTTP_BASH_IM);
+
+            if (!quoteAdapter.isEmpty()) {
+
+
+                View footer = getLayoutInflater().inflate(R.layout.footer, null);
+                listView.setVisibility(View.GONE); //скрываем listView чтоб не показывать лишние элементы на стартово экране
+                listView.addFooterView(footer); //впихиваем футер в наш listView
+                footerProgressBar = (ProgressBar) findViewById(R.id.footerProgressBar);
+                footerProgressBar.setMax(MAX_QUOTES); //задаем значение полного заполнения
+                TextView footerTextView = (TextView) findViewById(R.id.footerTextView);
+                footerTextView.setTypeface(georgia);
+                listView.setAdapter(quoteAdapter); //задаем адаптер ПОСЛЕ установки футера
+
+            } else {
+                mEmptyStateTextView.setVisibility(View.VISIBLE);
+                hideQuotesView();
+                mEmptyStateTextView.setText("Нет доступа к Bash");
+            }
+
+
+
 
         } else {
-            listView.setVisibility(View.GONE);
-            progressBar.setVisibility(View.GONE);
-            progressBarTextView.setVisibility(View.GONE);
-            bashImage.setVisibility(View.GONE);
+            hideQuotesView();
             mEmptyStateTextView.setText(R.string.noInternet);
         }
 
@@ -117,6 +127,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void hideQuotesView() {
+        listView.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
+        progressBarTextView.setVisibility(View.GONE);
+        bashImage.setVisibility(View.GONE);
     }
 
     private void addItems() {
@@ -178,15 +195,18 @@ public class MainActivity extends AppCompatActivity {
 
                 doc = getJsoupData(HTTP_BASH_IM); // коннектимся к башу и получаем HTTP
 
-                //Получаем все элементы со страницы, из которых будем лепить объекты quote
-                Elements quoteTexts = doc.select("div[class=\"text\"]"); //текст
-                Elements ratings = doc.select("span[class=\"rating\"]"); //рейтинг
-                Elements date = doc.select("span[class=\"date\"]"); //дата
-                Elements id = doc.select("[class=\"id\"]"); //id   <span id="v410856" class="rating">13426</span>
+                if (doc == null) {
+                    return new ArrayList<>();
+                } else {
+                    //Получаем все элементы со страницы, из которых будем лепить объекты quote
+                    Elements quoteTexts = doc.select("div[class=\"text\"]"); //текст
+                    Elements ratings = doc.select("span[class=\"rating\"]"); //рейтинг
+                    Elements date = doc.select("span[class=\"date\"]"); //дата
+                    Elements id = doc.select("[class=\"id\"]"); //id   <span id="v410856" class="rating">13426</span>
 
-                int rating; //инициализируем переменную для сравнения рейтинга
-                for (int i = 0; i < quoteTexts.size(); i++) { //создаем наши Quote объекты
-                    rating = getValidRating(ratings, i); //получаем рейтинг, преобразовываем в integer и ловим NumberFormatException
+                    int rating; //инициализируем переменную для сравнения рейтинга
+                    for (int i = 0; i < quoteTexts.size(); i++) { //создаем наши Quote объекты
+                        rating = getValidRating(ratings, i); //получаем рейтинг, преобразовываем в integer и ловим NumberFormatException
 
                         if (rating >= min_rating) {
                             String quoteText = cleanPreserveLineBreaks(quoteTexts.get(i).html());//хитрый способ сохранить переводы строк
@@ -199,15 +219,16 @@ public class MainActivity extends AppCompatActivity {
                             progress = quoteMap.size(); //*100/MAX_QUOTES; // а можно было проще ProgressBar.setMax(data);
                             publishProgress(progress);
                         }
-                }
+                    }
 
-            }
-            //запихиваем все то добро в конечный массив
-            for (Quote quote : quoteMap.values()) {
-                if (quotesList.size() > MAX_QUOTES) {
-                    break;
                 }
-                quotesList.add(quote);
+                //запихиваем все то добро в конечный массив
+                for (Quote quote : quoteMap.values()) {
+                    if (quotesList.size() > MAX_QUOTES) {
+                        break;
+                    }
+                    quotesList.add(quote);
+                }
             }
             return quotesList;
         }
@@ -237,7 +258,9 @@ public class MainActivity extends AppCompatActivity {
             bashImage.setVisibility(View.GONE);
             progressBar.setProgress(0);
             quoteAdapter.addAll(quotes);
-            footerProgressBar.setProgress(0);
+            if (footerProgressBar != null){
+                footerProgressBar.setProgress(0);
+            }
             flag_loading = false;
             listView.setVisibility(View.VISIBLE); //снова показываем наш listView
         }
