@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar footerProgressBar;
     private ImageView bashImage;
     private boolean flag_loading;
-
+    private boolean bashIsNotReachable = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
             quoteAdapter = new QuoteAdapter(this, new ArrayList<Quote>());
             parser.execute(HTTP_BASH_IM);
 
-            if (!quoteAdapter.isEmpty()) {
+            if (!bashIsNotReachable) {
 
 
                 View footer = getLayoutInflater().inflate(R.layout.footer, null);
@@ -196,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
                 doc = getJsoupData(HTTP_BASH_IM); // коннектимся к башу и получаем HTTP
 
                 if (doc == null) {
+                    bashIsNotReachable = true;
                     return new ArrayList<>();
                 } else {
                     //Получаем все элементы со страницы, из которых будем лепить объекты quote
@@ -246,8 +247,9 @@ public class MainActivity extends AppCompatActivity {
         protected void onProgressUpdate(Integer... progresses) {
             super.onProgressUpdate(progresses);
             progressBar.setProgress(progresses[0]);
-            footerProgressBar.setProgress(progresses[0]);
-
+            if (footerProgressBar != null) {
+                footerProgressBar.setProgress(progresses[0]);
+                }
 
         }
 
