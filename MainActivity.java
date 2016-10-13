@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar footerProgressBar;
     private ImageView bashImage;
     private boolean flag_loading;
-    private boolean bashIsNotReachable = false;
+    private boolean bashIsReachable = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
             quoteAdapter = new QuoteAdapter(this, new ArrayList<Quote>());
             parser.execute(HTTP_BASH_IM);
 
-            if (!bashIsNotReachable) {
+            if (bashIsReachable) {
 
 
                 View footer = getLayoutInflater().inflate(R.layout.footer, null);
@@ -189,16 +189,14 @@ public class MainActivity extends AppCompatActivity {
             ArrayList<Quote> quotesList = new ArrayList<>(); // массив для наших объектов Quote
             Document doc;
 
-            while (quoteMap.size() <= MAX_QUOTES) {
+            while (quoteMap.size() <= MAX_QUOTES && bashIsReachable) {
 
                 int progress;
 
                 doc = getJsoupData(HTTP_BASH_IM); // коннектимся к башу и получаем HTTP
 
-                if (doc == null) {
-                    bashIsNotReachable = true;
-                    return new ArrayList<>();
-                } else {
+                if (doc != null) {
+                    bashIsReachable = true;
                     //Получаем все элементы со страницы, из которых будем лепить объекты quote
                     Elements quoteTexts = doc.select("div[class=\"text\"]"); //текст
                     Elements ratings = doc.select("span[class=\"rating\"]"); //рейтинг
@@ -223,6 +221,11 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 }
+                else { //если баш недоступен, кладем в список пустую цитату
+                    bashIsReachable = false;
+                    quoteMap.values().add(new Quote(0, "", "", ""));
+                }
+            }
                 //запихиваем все то добро в конечный массив
                 for (Quote quote : quoteMap.values()) {
                     if (quotesList.size() > MAX_QUOTES) {
@@ -230,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     quotesList.add(quote);
                 }
-            }
+
             return quotesList;
         }
 
