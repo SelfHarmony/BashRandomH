@@ -1,0 +1,13 @@
+<<<<<<< Original<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+<application>
+    <activity android:name="self.harmony.bashrandomh.BlankActivity" />
+</application>
+</manifest>
+
+    =======<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+<application>
+    <activity android:name="self.harmony.bashrandomh.core.QuoteListActivity" />
+</application>
+</manifest>>>>>>>> Added

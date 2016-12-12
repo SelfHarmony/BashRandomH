@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Bash.org рандом</string>
+    <string name="progress">Отбираем лучшие цитаты...</string>
+
+    <string name="settings_menu_item">Настройки</string>
+    <string name="settings_title">Настройки отображения цитат</string>
+
+
+
+    <string name="settings_minRating_label">Минимальный рейтинг</string>
+    <string name="settings_minRating_key" translatable="false">min_rating</string>
+    <string name="settings_minRating_default" translatable="false">6000</string>
+
+<!-- для SEEKBAR -->
+    <string name="menu_settings">Настройки</string>
+    <string name="settings_dialog_message">Минимальный рейтинг</string>
+    <string name="settings_summary">Текущий минимальный рейтинг $1</string>
+    <string name="noInternet">Нет интернет соединения</string>
+    <string name="unreachable">Нет доступа к Bash</string>
+    <string name="loading_list_items">Загружаем еще</string>
+
+
+</resources>

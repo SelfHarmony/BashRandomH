@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#5e5e63</color>
+    <color name="colorPrimaryDark">#595961</color>
+    <color name="colorAccent">#000000</color>
+    <color name="bashQuoteBackground">#f2f2f2</color>
+    <color name="layoutBackground">#fffefe</color>
+    <color name="black">#000000</color>
+    <color name="darkGrey">#141514</color>
+    <color name="white">#ffffff</color>
+    <color name="pale">#B4BAC0</color>
+
+</resources>

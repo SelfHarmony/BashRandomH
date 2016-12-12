@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:fonted="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@color/white"
+              android:paddingTop="14dp">
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <self.harmony.bashrandomh.Views.FontedTextView
+                fonted:fontFace="helvetica"
+                android:id="@+id/rating"
+                android:paddingStart="8dp"
+                android:paddingLeft="8dp"
+                android:fontFamily=""
+                android:ellipsize="end"
+                android:textSize="14sp"
+                android:layout_width="0dp"
+                android:layout_weight="0.5"
+                android:layout_height="wrap_content"
+                android:text="1000"
+                android:textColor="@color/black"
+                android:background="@color/white"/>
+        <self.harmony.bashrandomh.Views.FontedTextView
+                fonted:fontFace="helvetica"
+                android:layout_width="0dp"
+                android:ellipsize="end"
+                android:textSize="14sp"
+                android:layout_weight="0.5"
+                android:layout_height="wrap_content"
+                android:text="date"
+                android:id="@+id/date" android:paddingRight="16dp" android:gravity="right"/>
+        <self.harmony.bashrandomh.Views.FontedTextView
+                fonted:fontFace="helvetica"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:ellipsize="end"
+                android:textSize="14sp"
+                android:text="id"
+                android:id="@+id/id" android:gravity="right"
+                android:paddingRight="8dp"
+                android:paddingEnd="8dp"/>
+    </LinearLayout>
+
+    <self.harmony.bashrandomh.Views.FontedTextView
+            fonted:fontFace="ubuntu_mono"
+            android:id="@+id/quote"
+            android:fontFamily="sans-serif"
+            android:paddingStart="10dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:ellipsize="end"
+            android:textSize="18sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="sth funny"
+            android:textColor="@color/black"
+            android:background="@drawable/background_changeable"/>
+</LinearLayout>

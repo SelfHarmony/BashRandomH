@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Define the list of fonts that you want to add.
+         The values used here are important and must match
+         those in your Font enum -->
+    <attr name="fontFace">
+        <enum name="ubuntu_mono" value="0"/>
+        <enum name="georgia" value="1"/>
+        <enum name="helvetica" value="2"/>
+    </attr>
+
+    <!-- Declare your custom view as a styleable view
+         with the fontFace attribute available -->
+    <declare-styleable name="FontedTextView">
+        <attr name="fontFace"/>
+    </declare-styleable>
+
+</resources>
