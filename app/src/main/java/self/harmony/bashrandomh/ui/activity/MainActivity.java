@@ -86,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
 
             if (bashIsReachable) {
 
-
                 View footer = getLayoutInflater().inflate(R.layout.footer, null);
                 listView.setVisibility(View.GONE); //скрываем listView чтоб не показывать лишние элементы на стартово экране
                 listView.addFooterView(footer); //впихиваем футер в наш listView
@@ -160,8 +159,6 @@ public class MainActivity extends AppCompatActivity {
                 Toast.LENGTH_SHORT).show();*/
         BackgroundJsoup parser = new BackgroundJsoup();
         parser.execute(HTTP_BASH_IM);
-
-
 
     }
 

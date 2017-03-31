@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'android-apt'
+apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 25
@@ -19,14 +21,27 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.facebook.stetho:stetho-urlconnection:1.4.1'
-    compile 'com.facebook.stetho:stetho:1.4.1'
     compile 'com.android.support:appcompat-v7:25.0.1'
+
+    /*Dagger2*/
+    compile "com.google.dagger:dagger:2.9"
+//    annotationProcessor "com.google.dagger:dagger-compiler:2.9"
+    apt "com.google.dagger:dagger-compiler:2.9"
+    provided 'javax.annotation:jsr250-api:1.0'
+
+    /*Stetho*/
+    compile 'com.facebook.stetho:stetho:1.4.1'
+    compile 'com.facebook.stetho:stetho-urlconnection:1.4.1'
+    compile 'com.facebook.stetho:stetho-okhttp3:1.4.1'
 
     /*Butterknife*/
     compile 'com.jakewharton:butterknife:8.4.0'
@@ -34,4 +49,10 @@ dependencies {
     /*MOXY*/
     compile 'com.arello-mobile:moxy-app-compat:1.1.2'
     apt 'com.arello-mobile:moxy-compiler:1.1.2'
+    /*Rx*/
+    compile 'io.reactivex:rxandroid:1.2.1'
+    compile 'io.reactivex:rxjava:1.1.6'
+    /*Retrofit*/
+    compile 'com.squareup.retrofit2:adapter-rxjava:2.0.2'
+    compile 'com.squareup.retrofit2:retrofit:2.1.0'
 }

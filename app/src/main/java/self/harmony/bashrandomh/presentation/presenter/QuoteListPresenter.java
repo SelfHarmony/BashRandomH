@@ -1,7 +1,6 @@
 package self.harmony.bashrandomh.presentation.presenter;
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import android.content.Context;
 
 import com.arellomobile.mvp.InjectViewState;
 import com.arellomobile.mvp.MvpPresenter;
@@ -15,7 +14,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import self.harmony.bashrandomh.R;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+import rx.subjects.BehaviorSubject;
 import self.harmony.bashrandomh.pojo.Quote;
 import self.harmony.bashrandomh.presentation.view.QuoteListView;
 
@@ -31,40 +33,40 @@ public class QuoteListPresenter extends MvpPresenter<QuoteListView> {
 
     private String stringRating;
 
-    private int min_rating;
+    private int minRating;
     private HashMap<String, Quote> quoteMap = new HashMap<>(); // для отсеивания дубликатов
     private ArrayList<Quote> quotesList = new ArrayList<>(); // массив для наших объектов Quote
     private Document doc;
-    private boolean bashIsReachable;
 
+
+    private Subscription subscription;
     private int mProgress;
+    private static final BehaviorSubject<Integer> ProgressSubject = BehaviorSubject.create(0);
+    private boolean bashIsAvailable;
+    private Context activityContext;
 
 
     public QuoteListPresenter() {
         initFields();
+
     }
 
     private void initFields() {
         quoteMap = new HashMap<>();
         quotesList = new ArrayList<>();
 
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(
-                getViewState().getContext());
-        stringRating = sharedPrefs.getString(
-                getViewState().getString(R.string.settings_minRating_key),
-                getViewState().getString(R.string.settings_minRating_default));
 
-        min_rating = getValidRating(stringRating);
     }
 
 
     private ArrayList<Quote> parseBashIntoQuoteList() {
-        while (quoteMap.size() <= MAX_QUOTES && bashIsReachable) {
+        getViewState().setFieldsForPresenter();
+        while (quoteMap.size() <= MAX_QUOTES && bashIsAvailable) {
 
             doc = getJsoupData(HTTP_BASH_IM); // коннектимся к башу и получаем HTTP
 
             if (doc != null) {
-                bashIsReachable = true;
+                getViewState().setBashAvailability(true);
                 //Получаем все элементы со страницы, из которых будем лепить объекты quote
                 Elements quoteTexts = doc.select(QUOTE_TEXT); //текст
                 Elements ratings = doc.select(QUOTE_RATING); //рейтинг
@@ -78,7 +80,7 @@ public class QuoteListPresenter extends MvpPresenter<QuoteListView> {
                             i); //получаем рейтинг, преобразовываем в integer и ловим
                     // NumberFormatException
 
-                    if (rating >= min_rating) {
+                    if (rating >= minRating) {
                         String quoteText = cleanPreserveLineBreaks(
                                 quoteTexts.get(i).html());//хитрый способ сохранить переводы строк
                         quoteText = removeNonParseable(
@@ -91,12 +93,14 @@ public class QuoteListPresenter extends MvpPresenter<QuoteListView> {
                         quoteMap.put(quoteID, quote);
                         mProgress = quoteMap.size(); //*100/MAX_QUOTES; // а можно было проще
 
-                        publishProgress(mProgress);
+                        ProgressSubject.onNext(mProgress);
+
+                        //ProgressSubjectSingleton.setValue(mProgress);
                     }
                 }
 
             } else { //если баш недоступен, кладем в список пустую цитату
-                bashIsReachable = false;
+                getViewState().setBashAvailability(false);
                 quoteMap.values().add(new Quote(0, "", "", ""));
             }
         }
@@ -122,15 +126,7 @@ public class QuoteListPresenter extends MvpPresenter<QuoteListView> {
         return rating;
     }
 
-    private int getValidRating(String ratingS) {
-        int rating;
-        try {
-            rating = Integer.parseInt(ratingS);
-        } catch (Exception e) {
-            rating = Integer.parseInt(String.valueOf(R.string.settings_minRating_default));
-        }
-        return rating;
-    }
+
 
     private String removeNonParseable(String quoteText) {
         quoteText = quoteText.replaceAll("&lt;", "<");
@@ -144,10 +140,13 @@ public class QuoteListPresenter extends MvpPresenter<QuoteListView> {
 
         // get pretty printed html with preserved br and p tags
         String prettyPrintedBodyFragment = Jsoup.parse(bodyHtml).html();
-        prettyPrintedBodyFragment = Jsoup.clean(prettyPrintedBodyFragment, "", Whitelist.none().addTags("br", "p"), new Document.OutputSettings().prettyPrint(true));
+        prettyPrintedBodyFragment = Jsoup.clean(prettyPrintedBodyFragment, "",
+                Whitelist.none().addTags("br", "p"),
+                new Document.OutputSettings().prettyPrint(true));
 
         // get plain text with preserved line breaks by disabled prettyPrint
-        return Jsoup.clean(prettyPrintedBodyFragment, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+        return Jsoup.clean(prettyPrintedBodyFragment, "", Whitelist.none(),
+                new Document.OutputSettings().prettyPrint(false));
     }
 
     /////////////////// CONNECTION ////////////////////////
@@ -159,5 +158,29 @@ public class QuoteListPresenter extends MvpPresenter<QuoteListView> {
             e.printStackTrace();
         }
         return doc;
+    }
+
+    /////////////////// RX SUBSCRIPTIONS ////////////////////////
+    public void subscribeToQuotesArray() {
+        if (subscription == null || subscription.isUnsubscribed()) {
+            subscription = ProgressSubject.asObservable()
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(progress -> {
+
+                    }, Throwable::printStackTrace);
+        }
+    }
+
+    public void setBashIsAvailable(boolean bashIsAvailable) {
+        this.bashIsAvailable = bashIsAvailable;
+    }
+
+    public void setActivityContext(Context activityContext) {
+        this.activityContext = activityContext;
+    }
+
+    public void setMinRating(int minRating) {
+        this.minRating = minRating;
     }
 }
