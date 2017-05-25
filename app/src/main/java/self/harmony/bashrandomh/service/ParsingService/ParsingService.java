@@ -36,14 +36,13 @@ public class ParsingService {
         quotesOutputArrayList = new ArrayList<>(); // массив для наших объектов Quote
     }
 
+    //// TODO: 03.03.17 onNext setProgress progress+1
 
-    public ArrayList<Quote> startParsing(ResponseBody responseBody) throws IOException {
+    public void startParsing(ResponseBody responseBody) throws IOException {
 
         Document doc = Jsoup.parse(responseBody.string());
         quotesOutputArrayList = parseOnePageAndFilterBest(doc);
 //        System.out.println(quotesOutputArrayList);
-
-        return quotesOutputArrayList;
 //        System.out.println("time elapsed --------------  ");
 
 //        if (subscription == null || subscription.isUnsubscribed()) {
@@ -78,11 +77,12 @@ public class ParsingService {
 
                            Quote quote = new Quote(rating, quoteText, quoteID, quoteDate); //создаем объект
                         outputArray.add(quote);
-
+                        ListComposer.ListComposingSubscription.getListComposingPublishSubject().onNext(quote);
+                        ProgressBarSubscription.getProgressBehaviourSubject().onNext(1);
                     }
                 }
             }
-//        ProgressBarSubscription.getProgressBehaviourSubject().onNext(outputArray.size());
+
         return outputArray;
     }
 

@@ -1,11 +1,11 @@
 package self.harmony.bashrandomh.service.ParsingService;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import okhttp3.ResponseBody;
 import rx.Observable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
@@ -17,14 +17,29 @@ public class ListComposer {
 
     private HttpService mHttpService;
     private HashMap<String, Quote> quotesFilterMap;
+    private Subscription omParsingCompleteSubscription;
 
     public ListComposer(HttpService httpService) {
         mHttpService = httpService;
+        quotesFilterMap = new HashMap<>();
     }
 
     public void compose() {
         subscribeParser(mHttpService);
+        subscribeOnParsingComplete();
 //        subscribeProgressBar();
+    }
+
+    private void subscribeOnParsingComplete() {
+        omParsingCompleteSubscription = ListComposingSubscription.getListComposingPublishSubject()
+                .onBackpressureBuffer()
+                .doOnError(Throwable::printStackTrace)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(quote -> {
+                        quotesFilterMap.put(quote.getId(), quote);
+                        System.out.println(quotesFilterMap.size());
+                });
     }
 
 //    private void subscribeProgressBar() {
@@ -49,7 +64,7 @@ public class ListComposer {
                 .doOnError(Throwable::printStackTrace)
                 .subscribe(responseBody -> {
                     try {
-                        addMoreFilteredQuotes(quotesFilterMap, new ParsingService().startParsing(responseBody));
+                        new ParsingService().startParsing(responseBody);
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -57,24 +72,17 @@ public class ListComposer {
                 }, Throwable::printStackTrace);
     }
 
-    private void addMoreFilteredQuotes(HashMap<String, Quote> quotesFilterMap,
-            ArrayList<Quote> quotes) {
-        for (Quote quote : quotes) {
-            String key = quote.getId();
-            quotesFilterMap.put(key, quote);
-        }
-    }
 
 
     public static class ListComposingSubscription {
-        private static PublishSubject<Integer> mListComposingBehaviourSubject =
+        private static PublishSubject<Quote> mListComposingBehaviourSubject =
                 PublishSubject.create();
 
-        public static PublishSubject<Integer> getListComposingBehaviourSubject() {
+        public static PublishSubject<Quote> getListComposingPublishSubject() {
             return mListComposingBehaviourSubject;
         }
 
-        public static Observable<Integer> getListComposingObservable() {
+        public static Observable<Quote> getListComposingObservable() {
             return mListComposingBehaviourSubject.asObservable();
         }
     }

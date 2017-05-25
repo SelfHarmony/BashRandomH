@@ -2,6 +2,9 @@ package self.harmony.bashrandomh.service.NetworkService;
 
 
 import android.content.SharedPreferences;
+import android.os.Handler;
+
+import java.util.Random;
 
 import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
@@ -16,11 +19,14 @@ public class HttpService {
 
     SharedPreferences mSharedPreferences;
     Retrofit mRetrofit;
-
+    Handler handler;
+    Random mRandom;
 
     public HttpService(SharedPreferences sharedPreferences, Retrofit retrofit) {
         mSharedPreferences = sharedPreferences;
         mRetrofit = retrofit;
+        handler = new Handler();
+        mRandom = new Random();
     }
 
 
@@ -29,21 +35,29 @@ public class HttpService {
             @Override
             public void call(Subscriber<? super ResponseBody> subscriber) {
                 HttpRequests.HtmlRequests bodyRequest;
-                for (int i = 0; i <= 50; i++) {
-                    bodyRequest = mRetrofit.create(
-                            HttpRequests.HtmlRequests.class);
-                    bodyRequest.getHtmlBody().subscribeOn(Schedulers.newThread())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(responseBody ->
-                            {
-                                subscriber.onNext(responseBody);
-                                //todo отписка
-                                /*if (i == 5) {
 
-                                }*/
-                            });
-
+                for (int i = 0; i < 3; i++) {
+                    getHttp(subscriber);
+                    //handler.postDelayed(() -> getHttp(subscriber), 100);
                 }
+            }
+
+            private void getHttp(Subscriber<? super ResponseBody> subscriber) {
+                HttpRequests.HtmlRequests bodyRequest;
+                bodyRequest = mRetrofit.create(
+                        HttpRequests.HtmlRequests.class);
+                bodyRequest.getHtmlBody(String.valueOf(mRandom.nextInt(8999)+ 1000))
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(responseBody ->
+                        {
+                            subscriber.onNext(responseBody);
+                            System.out.println("__________________");
+                            //todo отписка
+                            /*if (i == 5) {
+
+                            }*/
+                        });
             }
         });
     }
