@@ -75,7 +75,7 @@ public class ParsingService {
                         String quoteID = id.get(i).text();
                         String quoteDate = date.get(i).text();
 
-                           Quote quote = new Quote(rating, quoteText, quoteID, quoteDate); //создаем объект
+                        Quote quote = new Quote(rating, quoteText, quoteID, quoteDate); //создаем объект
                         outputArray.add(quote);
                         ListComposer.ListComposingSubscription.getListComposingPublishSubject().onNext(quote);
                         ProgressBarSubscription.getProgressBehaviourSubject().onNext(1);

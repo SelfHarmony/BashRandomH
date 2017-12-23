@@ -74,11 +74,11 @@ public class ListComposer {
 
 
 
-    public static class ListComposingSubscription {
+    static class ListComposingSubscription {
         private static PublishSubject<Quote> mListComposingBehaviourSubject =
                 PublishSubject.create();
 
-        public static PublishSubject<Quote> getListComposingPublishSubject() {
+        static PublishSubject<Quote> getListComposingPublishSubject() {
             return mListComposingBehaviourSubject;
         }
 

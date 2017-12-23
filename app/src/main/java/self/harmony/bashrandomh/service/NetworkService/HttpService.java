@@ -37,8 +37,10 @@ public class HttpService {
                 HttpRequests.HtmlRequests bodyRequest;
 
                 for (int i = 0; i < 3; i++) {
-                    getHttp(subscriber);
-                    //handler.postDelayed(() -> getHttp(subscriber), 100);
+//                    getHttp(subscriber);
+                    handler.postDelayed(() -> {
+                        getHttp(subscriber);
+                    }, 100*i);
                 }
             }
 
@@ -46,17 +48,17 @@ public class HttpService {
                 HttpRequests.HtmlRequests bodyRequest;
                 bodyRequest = mRetrofit.create(
                         HttpRequests.HtmlRequests.class);
-                bodyRequest.getHtmlBody(String.valueOf(mRandom.nextInt(8999)+ 1000))
+                String codeForCache = String.valueOf(mRandom.nextInt(100));
+                bodyRequest.getHtmlBody(codeForCache)
                         .subscribeOn(Schedulers.newThread())
                         .observeOn(AndroidSchedulers.mainThread())
+                        .doOnError(Throwable::printStackTrace)
                         .subscribe(responseBody ->
                         {
                             subscriber.onNext(responseBody);
                             System.out.println("__________________");
                             //todo отписка
-                            /*if (i == 5) {
-
-                            }*/
+                            /*if (i == 5) { } */
                         });
             }
         });
